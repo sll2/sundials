@@ -538,6 +538,8 @@ negative, so a test ``retval`` :math:`<0` will catch any error.
   +--------------------------------------------------------+----------------------------------+------------------------------+
   | Anderson Acceleration orthogonalization routine        | :c:func:`KINSetOrthAA`           | ``KIN_ORTH_MGS``             |
   +--------------------------------------------------------+----------------------------------+------------------------------+
+  | Alternating Anderson Acceleration iteration count      | :c:func:`KINSetPAA`              | 1                            |
+  +--------------------------------------------------------+----------------------------------+------------------------------+
   | **KINLS linear solver interface**                      |                                  |                              |
   +--------------------------------------------------------+----------------------------------+------------------------------+
   | Jacobian function                                      | :c:func:`KINSetJacFn`            | DQ                           |
@@ -1259,6 +1261,33 @@ negative, so a test ``retval`` :math:`<0` will catch any error.
 
       An example of how to use this function can be found in
       ``examples/kinsol/serial/kinAnalytic_fp.c``
+
+
+.. c:function:: int KINSetPAA(void * kin_mem, long int paa)
+
+   The function :c:func:`KINSetPAA` specifies the number of Picard or fixed-point
+   iterations after which to execuate an iteration of Anderson acceleration. 
+
+   **Arguments:**
+     * ``kin_mem`` -- pointer to the KINSOL memory block.
+     * ``maa`` -- number of iterations between each Anderson acceleration iteration.
+       A value of 1 means no alternating iterations, while a value greater than 1 means some
+       number of alternating iterations.
+
+   **Return value:**
+     * ``KIN_SUCCESS`` -- The optional value has been successfully set.
+     * ``KIN_MEM_NULL`` -- The ``kin_mem`` pointer is ``NULL``.
+     * ``KIN_ILL_INPUT`` -- The argument ``maa`` was negative.
+
+   **Notes:**
+      This function sets the number of Picard or fixed-point iterations between
+      each Anderson Acceleration iteration, which needs to be :math:`> 1` if
+      Alternating Anderson  Acceleration is to be used.  The default value of
+      ``paa`` is 1, indicating no alternating iterations.  The value of ``paa``
+      should always be less than ``mxiter``.  This function MUST be called
+      before calling :c:func:`KINInit`.  If the user calls the function
+      KINSetNumMaxIters, that call should be made  before the call to KINSetPAA,
+      as the latter uses the value of ``mxiter``.
 
 
 .. _KINSOL.Usage.CC.optional_inputs.optin_ls:
