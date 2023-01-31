@@ -189,6 +189,8 @@ typedef struct KINMemRec {
   long int *kin_ipt_map;      /* array of size maa*maa/2 used in AA              */
   long int kin_m_aa;          /* parameter for AA, Broyden or NLEN               */
   long int kin_delay_aa;      /* number of iterations to delay AA */
+  long int kin_p_aa;          /* number of iterations after which to complete 
+                                 an AA step                                      */
   int kin_orth_aa;            /* parameter for AA determining orthogonalization
                                  routine
                                  0 - Modified Gram Schmidt (standard)
@@ -448,6 +450,7 @@ void KINInfoHandler(const char *module, const char *function,
 #define MSG_BAD_CONSTRAINTS    "Illegal values in constraints vector."
 #define MSG_BAD_OMEGA          "scalars < 0 illegal."
 #define MSG_BAD_MAA            "maa < 0 illegal."
+#define MSG_BAD_PAA            "paa < 1 illegal."
 #define MSG_BAD_ORTHAA         "Illegal value for orthaa."
 #define MSG_ZERO_MAA           "maa = 0 illegal."
 

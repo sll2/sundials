@@ -269,6 +269,7 @@ void *KINCreate(SUNContext sunctx)
   kin_mem->kin_orth_aa          = KIN_ORTH_MGS;
   kin_mem->kin_qr_func          = NULL;
   kin_mem->kin_qr_data          = NULL;
+  kin_mem->kin_p_aa             = 1;
   kin_mem->kin_beta_aa          = ONE;
   kin_mem->kin_damping_aa       = SUNFALSE;
   kin_mem->kin_constraintsSet   = SUNFALSE;
@@ -2547,11 +2548,11 @@ static int KINPicardAA(KINMem kin_mem)
       /* compute iteration count for Anderson acceleration */
       if (kin_mem->kin_delay_aa > 0)
       {
-        iter_aa = kin_mem->kin_nni - 1 - kin_mem->kin_delay_aa;
+        iter_aa = (kin_mem->kin_nni / kin_mem->kin_p_aa) - 1 - kin_mem->kin_delay_aa;
       }
       else
       {
-        iter_aa = kin_mem->kin_nni - 1;
+        iter_aa = (kin_mem->kin_nni / kin_mem->kin_p_aa) - 1;
       }
 
       AndersonAcc(kin_mem,                /* kinsol memory            */
@@ -2750,11 +2751,11 @@ static int KINFP(KINMem kin_mem)
       /* compute iteration count for Anderson acceleration */
       if (kin_mem->kin_delay_aa > 0)
       {
-        iter_aa = kin_mem->kin_nni - 1 - kin_mem->kin_delay_aa;
+        iter_aa = (kin_mem->kin_nni / kin_mem->kin_p_aa) - 1 - kin_mem->kin_delay_aa;
       }
       else
       {
-        iter_aa = kin_mem->kin_nni - 1;
+        iter_aa = (kin_mem->kin_nni / kin_mem->kin_p_aa) - 1;
       }
 
       /* apply Anderson acceleration */

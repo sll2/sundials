@@ -108,6 +108,7 @@ SUNDIALS_EXPORT int KINSol(void *kinmem, N_Vector uu, int strategy,
 SUNDIALS_EXPORT int KINSetUserData(void *kinmem, void *user_data);
 SUNDIALS_EXPORT int KINSetDamping(void *kinmem, realtype beta);
 SUNDIALS_EXPORT int KINSetMAA(void *kinmem, long int maa);
+SUNDIALS_EXPORT int KINSetPAA(void *kinmem, long int paa);
 SUNDIALS_EXPORT int KINSetOrthAA(void *kinmem, int orthaa);
 SUNDIALS_EXPORT int KINSetDelayAA(void *kinmem, long int delay);
 SUNDIALS_EXPORT int KINSetDampingAA(void *kinmem, realtype beta);

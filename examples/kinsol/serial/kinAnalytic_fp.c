@@ -98,6 +98,7 @@ typedef struct
   realtype tol;         /* solve tolerance                  */
   long int maxiter;     /* max number of iterations         */
   long int m_aa;        /* number of acceleration vectors   */
+  long int p_aa;        /* every number of iterations execute AA step */
   long int delay_aa;    /* number of iterations to delay AA */
   int      orth_aa;     /* orthogonalization method         */
   realtype damping_fp;  /* damping parameter for FP         */
@@ -225,6 +226,10 @@ int main(int argc, char *argv[])
     /* Set acceleration delay */
     retval = KINSetDelayAA(kmem, uopt->delay_aa);
     if (check_retval(&retval, "KINSetDelayAA", 1)) return(1);
+
+    /* Set alternating iteration count */
+    retval = KINSetPAA(kmem, uopt->p_aa);
+    if (check_retval(&retval, "KINSetPAA", 1)) return(1);
   }
 
   /* Set info log file and print level */
@@ -391,6 +396,7 @@ static int SetDefaults(UserOpt *uopt)
   (*uopt)->tol        = 100 * SQRT(UNIT_ROUNDOFF);
   (*uopt)->maxiter    = 30;
   (*uopt)->m_aa       = 0;            /* no acceleration */
+  (*uopt)->p_aa       = 1;            /* no alternating AA */
   (*uopt)->delay_aa   = 0;            /* no delay        */
   (*uopt)->orth_aa    = 0;            /* MGS             */
   (*uopt)->damping_fp = RCONST(1.0);  /* no FP dampig    */
@@ -427,6 +433,11 @@ static int ReadInputs(int *argc, char ***argv, UserOpt uopt)
     {
       arg_index++;
       uopt->delay_aa = atoi((*argv)[arg_index++]);
+    }
+    else if (strcmp((*argv)[arg_index], "--p_aa") == 0)
+    {
+      arg_index++;
+      uopt->p_aa = atoi((*argv)[arg_index++]);
     }
     else if (strcmp((*argv)[arg_index], "--damping_fp") == 0)
     {

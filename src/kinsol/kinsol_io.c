@@ -304,6 +304,36 @@ int KINSetDelayAA(void *kinmem, long int delay)
 
 /*
  * -----------------------------------------------------------------
+ * Function : KINSetPAA
+ * -----------------------------------------------------------------
+ */
+
+int KINSetPAA(void *kinmem, long int paa)
+{
+  KINMem kin_mem;
+
+  if (kinmem == NULL) {
+    KINProcessError(NULL, KIN_MEM_NULL, "KINSOL", "KINSetPAA", MSG_NO_MEM);
+    return(KIN_MEM_NULL);
+  }
+
+  kin_mem = (KINMem) kinmem;
+
+  if (paa < 1) {
+    KINProcessError(NULL, KIN_ILL_INPUT, "KINSOL", "KINSetPAA", MSG_BAD_PAA);
+    return(KIN_ILL_INPUT);
+  }
+
+  if (paa > kin_mem->kin_mxiter) paa = kin_mem->kin_mxiter;
+
+  kin_mem->kin_p_aa = paa;
+
+  return(KIN_SUCCESS);
+}
+
+
+/*
+ * -----------------------------------------------------------------
  * Function : KINSetOrthAA
  * -----------------------------------------------------------------
  */
