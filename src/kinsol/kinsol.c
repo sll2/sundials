@@ -185,6 +185,9 @@ static int KINStop(KINMem kin_mem, booleantype maxStepTaken,
                    int sflag);
 static int AndersonAcc(KINMem kin_mem, N_Vector gval, N_Vector fv, N_Vector x,
                        N_Vector x_old, long int iter, realtype *R, realtype *gamma);
+/* NEED TO UPDATE FUNCTION ARGUMENTS */
+static int CompAndersonAcc(KINMem kin_mem, N_Vector gval, N_Vector fv, N_Vector x,
+                           N_Vector x_old, long int iter, realtype *R, realtype *gamma);
 
 /*
  * =================================================================
@@ -272,6 +275,20 @@ void *KINCreate(SUNContext sunctx)
   kin_mem->kin_p_aa             = 1;
   kin_mem->kin_beta_aa          = ONE;
   kin_mem->kin_damping_aa       = SUNFALSE;
+
+  kin_mem->kin_m_caa            = 0;
+  kin_mem->kin_orth_caa         = KIN_ORTH_MGS;
+  kin_mem->kin_fold_caa         = NULL;
+  kin_mem->kin_gold_caa         = NULL;
+  kin_mem->kin_df_caa           = NULL;
+  kin_mem->kin_dg_caa           = NULL;
+  kin_mem->kin_q_caa            = NULL;
+  kin_mem->kin_T_caa            = NULL;
+  kin_mem->kin_gamma_caa        = NULL;
+  kin_mem->kin_R_caa            = NULL;
+  kin_mem->kin_mxiter_caa       = 0;
+  kin_mem->kin_vtemp4           = NULL;
+
   kin_mem->kin_constraintsSet   = SUNFALSE;
   kin_mem->kin_ehfun            = KINErrHandler;
   kin_mem->kin_eh_data          = kin_mem;
@@ -3015,6 +3032,44 @@ static int AndersonAcc(KINMem kin_mem, N_Vector gval, N_Vector fv,
   /* update solution */
   retval = N_VLinearCombination(nvec, cv, Xv, x);
   if (retval != KIN_SUCCESS) return(KIN_VECTOROP_ERR);
+  
+  /* If Composite Anderson Acceleration - call inner Anderson Acceleration */
+  if (kin_mem->kin_mxiter_caa > 0) {
+
+    /* Fixed Point + AA with m_N */
+    N_Vector delta;   /* temporary workspace vector  */
+    delta  = kin_mem->kin_vtemp4;
+
+    for (i_innerAA = 0; i_innerAA < kin_mxiter_caa; i++) {
+
+      /* evaluate func(uu) and return if failed */
+      retval = kin_mem->kin_func(x, kin_mem->kin_fval,
+                                 kin_mem->kin_user_data);
+      if (retval != KIN_SUCCESS) return(KIN_SYSFUNC_FAIL);
+
+      /* NOT SURE IF THIS SHOULD BE UPDATED HERE */
+      /* kin_mem->kin_nfe++; */
+
+      /* compute new solution */
+      if (kin_mem->kin_m_caa == 0)
+      {
+        /* Not considering damping for inner AA currently */
+        /* standard fixed point */
+        N_VScale(ONE, kin_mem->kin_fval, x);
+      }
+      else
+      {
+        /* PICK UP HERE - Need to decide what we're going to store old x in..., also, need to move code from above here */
+        /* apply Anderson acceleration */
+        AndersonAcc(kin_mem, kin_mem->kin_fval, delta, x,
+                    x, i_innerAA, kin_mem->kin_R_caa,
+                    kin_mem->kin_gamma_caa);
+
+      }
+    }
+  }
 
   return 0;
 }
+
+
