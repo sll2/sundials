@@ -398,6 +398,126 @@ int KINSetDampingAA(void *kinmem, realtype beta)
 
 /*
  * -----------------------------------------------------------------
+ * Function : KINSetMaxIterCAA
+ * -----------------------------------------------------------------
+ */
+
+int KINSetMaxIterCAA(void *kinmem, long int mxiter)
+{
+  KINMem kin_mem;
+
+  if (kinmem == NULL) {
+    KINProcessError(NULL, KIN_MEM_NULL, "KINSOL", "KINSetMaxIterCAA", MSG_NO_MEM);
+    return(KIN_MEM_NULL);
+  }
+
+  kin_mem = (KINMem) kinmem;
+
+  if (mxiter < 0) {
+    KINProcessError(NULL, KIN_ILL_INPUT, "KINSOL", "KINSetMaxIterCAA", MSG_BAD_MXITER);
+    return(KIN_ILL_INPUT);
+  }
+
+  kin_mem->kin_mxiter_caa = mxiter;
+
+  return(KIN_SUCCESS);
+}
+
+/*
+ * -----------------------------------------------------------------
+ * Function : KINSetMCAA
+ * -----------------------------------------------------------------
+ */
+
+int KINSetMCAA(void *kinmem, long int mcaa)
+{
+  KINMem kin_mem;
+
+  if (kinmem == NULL) {
+    KINProcessError(NULL, KIN_MEM_NULL, "KINSOL", "KINSetMCAA", MSG_NO_MEM);
+    return(KIN_MEM_NULL);
+  }
+
+  kin_mem = (KINMem) kinmem;
+
+  if (mcaa < 0) {
+    KINProcessError(NULL, KIN_ILL_INPUT, "KINSOL", "KINSetMCAA", MSG_BAD_MAA);
+    return(KIN_ILL_INPUT);
+  }
+
+  if (mcaa > kin_mem->kin_mxiter_caa) mcaa = kin_mem->kin_mxiter_caa;
+
+  kin_mem->kin_m_caa = mcaa;
+
+  return(KIN_SUCCESS);
+}
+
+/*
+ * -----------------------------------------------------------------
+ * Function : KINSetOrthCAA
+ * -----------------------------------------------------------------
+ */
+
+int KINSetOrthCAA(void *kinmem, int orthaa)
+{
+  KINMem kin_mem;
+
+  if (kinmem == NULL) {
+    KINProcessError(NULL, KIN_MEM_NULL, "KINSOL", "KINSetOrthCAA", MSG_NO_MEM);
+    return(KIN_MEM_NULL);
+  }
+
+  kin_mem = (KINMem) kinmem;
+
+  if ((orthaa < KIN_ORTH_MGS) || (orthaa > KIN_ORTH_DCGS2)) {
+    KINProcessError(kin_mem, KIN_ILL_INPUT, "KINSOL", "KINSetOrthCAA", MSG_BAD_ORTHAA);
+    return(KIN_ILL_INPUT);
+  }
+
+  kin_mem->kin_orth_caa = orthaa;
+
+  return(KIN_SUCCESS);
+}
+
+/*
+ * -----------------------------------------------------------------
+ * Function : KINSetDampingCAA
+ * -----------------------------------------------------------------
+ */
+
+int KINSetDampingCAA(void *kinmem, realtype beta)
+{
+  KINMem kin_mem;
+
+  if (kinmem == NULL) {
+    KINProcessError(NULL, KIN_MEM_NULL, "KINSOL", "KINSetDampingCAA", MSG_NO_MEM);
+    return(KIN_MEM_NULL);
+  }
+
+  kin_mem = (KINMem) kinmem;
+
+  /* check for illegal input value */
+  if (beta <= ZERO) {
+    KINProcessError(NULL, KIN_ILL_INPUT, "KINSOL", "KINSetDampingCAA",
+                    "beta <= 0 illegal");
+    return(KIN_ILL_INPUT);
+  }
+
+  if (beta < ONE) {
+    /* enable damping */
+    kin_mem->kin_beta_caa    = beta;
+    kin_mem->kin_damping_caa = SUNTRUE;
+  } else {
+    /* disable damping */
+    kin_mem->kin_beta_caa    = ONE;
+    kin_mem->kin_damping_caa = SUNFALSE;
+  }
+
+  return(KIN_SUCCESS);
+}
+
+/*
+ * -----------------------------------------------------------------
  * Function : KINSetReturnNewest
  * -----------------------------------------------------------------
  */

@@ -204,6 +204,32 @@ typedef struct KINMemRec {
   realtype *kin_cv;           /* scalar array for fused vector operations        */
   N_Vector *kin_Xv;           /* vector array for fused vector operations        */
 
+  /* space requirements for Composite AA */
+  long int kin_mxiter_caa;
+  N_Vector kin_unew_caa;
+  N_Vector kin_fval_caa;
+  N_Vector kin_fold_caa;      /* vector needed for Composite AA                  */
+  N_Vector kin_gold_caa;      /* vector needed for Composite AA                  */
+  N_Vector *kin_df_caa;       /* vector array needed for Composite AA            */
+  N_Vector *kin_dg_caa;       /* vector array needed for Composite AA            */
+  N_Vector *kin_q_caa;        /* vector array needed for CAA                      */
+  realtype kin_beta_caa;      /* beta damping parameter for CAA                   */
+  realtype *kin_gamma_caa;    /* array of size m_caa used in CAA                    */
+  realtype *kin_R_caa;        /* array of size m_caa*m_caa used in CAA                */
+  realtype *kin_T_caa;        /* array of size m_caa*m_caa used in CAA with ICWY MGS  */
+  long int *kin_ipt_map_caa;  /* array of size m_caa*m_caa/2 used in CAA              */
+  long int kin_m_caa;         /* parameter for CAA               */
+  int kin_orth_caa;           /* parameter for CAA determining orthogonalization
+                                 routine
+                                 0 - Modified Gram Schmidt (standard)
+                                 1 - ICWY Modified Gram Schmidt (Bjorck)
+                                 2 - CGS2 (Hernandez)
+                                 3 - Delayed CGS2 (Hernandez)                    */
+  SUNQRAddFn kin_qr_func_caa;  /* QRAdd function for CAA orthogonalization         */
+  SUNQRData  kin_qr_data_caa;  /* Additional parameters required for QRAdd routine
+                                 set for CAA                                      */
+  booleantype kin_damping_caa; /* flag to apply damping in CAA                     */
+
   /* space requirements for vector storage */
 
   sunindextype kin_lrw1;    /* number of realtype-sized memory blocks needed

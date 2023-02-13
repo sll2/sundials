@@ -3396,7 +3396,7 @@ static int KINFP(KINMem kin_mem)
         N_VScale(ONE, kin_mem->kin_unew, kin_mem->kin_unew_caa);
 
         /* apply inner iterations */
-        for (i_inner_aa = 0; i_inner_aa < kin_mxiter_caa; i++) {
+        for (i_inner_aa = 0; i_inner_aa < kin_mem->kin_mxiter_caa; i_inner_aa++) {
 
           /* evaluate func(unew) and return if failed */
           retval = kin_mem->kin_func(kin_mem->kin_unew_caa, kin_mem->kin_fval_caa,
