@@ -106,6 +106,10 @@ struct UserData
   realtype damping;     // daming for Anderson Acceleration
   int      orthaa;      // orthogonalization routine for AA
   int      maxits;      // max number of fixed point iterations
+  int      maxits_caa;  // inner iterations for Composite AA
+  int      mcaa;        // m for inner iterations of Composite AA
+  int      orthcaa;     // orthogonlization routine for inner iterations of Composite AA
+  int      damping_caa; // damping for inner iterations of Composite AA
 
   // Linear solver and preconditioner settings
   bool     lsinfo;    // output residual history
