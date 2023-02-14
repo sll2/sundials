@@ -27,6 +27,8 @@
 #include "nvector/nvector_parallel.h"       // access to the MPI N_Vector
 #include "sunlinsol/sunlinsol_pcg.h"        // access to PCG SUNLinearSolver
 #include "HYPRE_struct_ls.h"                // HYPRE structured grid solver interface
+#include "HYPRE_parcsr_ls.h"                // HYPRE IJ matrix interface
+#include "HYPRE.h" 
 #include "mpi.h"                            // MPI header file
 
 // Macros for problem constants
@@ -239,5 +241,7 @@ static int CloseResOutput(UserData *udata);
 
 // Check function return values
 static int check_retval(void *flagvalue, const string funcname, int opt);
+
+static int print_matrix(UserData *udata);
 
 #endif

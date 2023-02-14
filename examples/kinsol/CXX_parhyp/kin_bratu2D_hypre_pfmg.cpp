@@ -204,6 +204,10 @@ int main(int argc, char* argv[])
     // ----------------------------
     // Call KINSol to solve problem
     // ----------------------------
+    
+    // print matrix
+    retval = print_matrix(udata);
+    if (check_retval(&retval, "print_matrix", 1)) return 1;
 
     // No scaling used
     N_VConst(ONE, scale);
@@ -460,6 +464,8 @@ static int FPFunction(N_Vector u, N_Vector f, void *user_data)
   // ---------------------------
   // Calculate f = C e^u
   // ---------------------------
+  //
+  // REPLACE WITH CUDA KERNEL
 
   // Iterate over domain interior
   sunindextype istart = (udata->HaveNbrW) ? 0 : 1;
@@ -479,6 +485,10 @@ static int FPFunction(N_Vector u, N_Vector f, void *user_data)
   // ---------------------------
   // Solve Au = C e^u
   // ---------------------------
+  //
+  // REPLACE WITH HYPRE PCG
+  // CALL FUNCTION THAT SETSUP PCG FOR THIS ITERATION
+  // HYPRE_PCGSolve(solver, udata->Jmatrix, f, f);
 
   // Solve system Au = f, store solution in f
   retval = SUNLinSolSolve(udata->LS, NULL, f, f, udata->epslin);
@@ -1795,6 +1805,63 @@ static int check_retval(void *flagvalue, const string funcname, int opt)
   }
 
   return 0;
+}
+
+// Convert StructMatrix to IJMatrix and print out
+static int print_matrix(UserData *udata)
+{
+  int my_id;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+
+  HYPRE_StructMatrix Jmatrix = udata->Jmatrix;
+  HYPRE_IJMatrix ij_matrix;
+
+  // Extract the global number of rows and columns
+  int global_num_rows = udata->nodes;
+  int global_num_cols = udata->nodes;
+
+  // Compute the row and column partitioning
+  /*int row_sizes = udata->iupper[0] - udata->ilower[0] + 1;
+  int col_sizes = udata->iupper[0] - udata->ilower[0] + 1;
+  int *row_partitioning = new int[udata->nprocs_w + 1];
+  int *col_partitioning = new int[udata->nprocs_w + 1];
+  for (int i = 0; i <= udata->nprocs_w; i++) {
+    row_partitioning[i] = i * row_sizes;
+    col_partitioning[i] = i * col_sizes;
+  }*/
+
+  // Create the IJMatrix
+  HYPRE_IJMatrixCreate(MPI_COMM_WORLD, udata->js, udata->je, udata->is, udata->ie, &ij_matrix);
+  HYPRE_IJMatrixSetObjectType(ij_matrix, HYPRE_PARCSR);
+  HYPRE_IJMatrixInitialize(ij_matrix);
+
+  // Loop over the rows and columns of the StructMatrix, and add entries to the IJMatrix
+  int index;
+  double value;
+  for (int i = udata->is; i < udata->ie; i++) {
+    for (int j = udata->js; j < udata->je; j++) {
+      index = HYPRE_IJMatrixLocalToGlobal();
+      int offset = i * global_num_cols + j;
+      HYPRE_StructMatrixGetValues(Jmatrix, 1, &offset, 1, &offset);
+      if (value != 0.0) {
+        HYPRE_IJMatrixAddToValues(ij_matrix, 1, 1, &i, &j, &value);
+      }
+    }
+  }
+
+  // Finalize the IJMatrix
+  HYPRE_IJMatrixAssemble(ij_matrix);
+
+  // Print matrix to file
+  const char *filename = "kin_bratu2d_matrix.txt";
+  FILE *file = fopen(filename, "w");
+  HYPRE_IJMatrixPrint(ij_matrix, filename);
+  fclose(file);
+
+  // Destroy matrix
+  HYPRE_IJMatrixDestroy(ij_matrix);
+
+  return 0; 
 }
 
 //---- end of file ----
