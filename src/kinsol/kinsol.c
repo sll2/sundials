@@ -3390,14 +3390,14 @@ static int KINFP(KINMem kin_mem)
                   kin_mem->kin_gamma_aa);
 
       /* check if Composite Anderson acceleration */
-      if (kin_mem->kin_mxiter_caa > 0) {
-
+      if (kin_mem->kin_mxiter_caa > 0)
+      {
         /* copy unew into unew_caa */
         N_VScale(ONE, kin_mem->kin_unew, kin_mem->kin_unew_caa);
 
         /* apply inner iterations */
-        for (i_inner_aa = 0; i_inner_aa < kin_mem->kin_mxiter_caa; i_inner_aa++) {
-
+        for (i_inner_aa = 0; i_inner_aa < kin_mem->kin_mxiter_caa; i_inner_aa++)
+        {
           /* evaluate func(unew) and return if failed */
           retval = kin_mem->kin_func(kin_mem->kin_unew_caa, kin_mem->kin_fval_caa,
                                      kin_mem->kin_user_data);
@@ -3426,13 +3426,16 @@ static int KINFP(KINMem kin_mem)
           }
           else
           {
-            /* compute iteration count for inner Anderson acceleration */
-            iter_caa = i_inner_aa - 1;
-
             /* apply inner Anderson acceleration */
-            AndersonAcc(kin_mem, kin_mem->kin_fval_caa, delta, kin_mem->kin_unew,
-                        kin_mem->kin_unew_caa, iter_caa, kin_mem->kin_R_caa,
-                        kin_mem->kin_gamma_caa);
+            InnerAndersonAcc(kin_mem, kin_mem->kin_fval_caa, delta, kin_mem->kin_unew,
+                             kin_mem->kin_unew_caa, i_inner_aa, kin_mem->kin_R_caa,
+                             kin_mem->kin_gamma_caa);
+          }
+
+          /* if continuing inner iteration */
+          if ((i_inner_aa + 1) < kin_mem->kin_mxiter_caa) {
+            /* copy unew into unew_caa */
+            N_VScale(ONE, kin_mem->kin_unew, kin_mem->kin_unew_caa);
           }
         }
       }

@@ -1735,7 +1735,17 @@ static int OpenResOutput(UserData *udata)
     // Open output streams for solution
     fname.str("");
     fname.clear();
-    fname << "bratu2d_res_m" << udata->maa << "_orth" << udata->orthaa << ".txt";
+    if (udata->maxits_caa > 0) {
+        if (udata->mcaa > 0) {
+            fname << "bratu2d_res_m" << udata->maa << "_orth" << udata->orthaa << "_mc" << udata->mcaa << ".txt";
+        }
+        else {
+            fname << "bratu2d_res_m" << udata->maa << "_orth" << udata->orthaa << "alt" << udata->maxits_caa << ".txt";
+        }
+    }
+    else {
+        fname << "bratu2d_res_m" << udata->maa << "_orth" << udata->orthaa << ".txt";
+    }
     udata->rout.open(fname.str());
 
     udata->rout << scientific;
@@ -1836,7 +1846,7 @@ static int print_matrix(UserData *udata)
   HYPRE_IJMatrixInitialize(ij_matrix);
 
   // Loop over the rows and columns of the StructMatrix, and add entries to the IJMatrix
-  int index;
+  /*int index;
   double value;
   for (int i = udata->is; i < udata->ie; i++) {
     for (int j = udata->js; j < udata->je; j++) {
@@ -1847,7 +1857,7 @@ static int print_matrix(UserData *udata)
         HYPRE_IJMatrixAddToValues(ij_matrix, 1, 1, &i, &j, &value);
       }
     }
-  }
+  }*/
 
   // Finalize the IJMatrix
   HYPRE_IJMatrixAssemble(ij_matrix);
