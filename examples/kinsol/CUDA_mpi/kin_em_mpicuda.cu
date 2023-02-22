@@ -288,6 +288,18 @@ int main(int argc, char* argv[])
     retval = KINSetOrthAA(kin_mem, udata->orthaa);
     if (check_retval(&retval, "KINSetOrthAA", 0)) return 1;
 
+    // Set maxits for inner iterations of Composite AA
+    retval = KINSetMaxIterCAA(kin_mem, udata->maxits_caa);
+    if (check_retval(&retval, "KINSetMaxIterCAA", 1)) return 1;
+
+    // Set number of prior residuals used in inner iterations of Composite AA
+    retval = KINSetMCAA(kin_mem, udata->mcaa);
+    if (check_retval(&retval, "KINSetMCAA", 1)) return 1;
+
+    // Set orthogonalization routined used in inner iterations of Composite AA
+    retval = KINSetOrthCAA(kin_mem, udata->orthcaa);
+    if (check_retval(&retval, "KINSetOrthCAA", 1)) return 1;
+
     // Set Fixed Point Function
     retval = KINInit(kin_mem, FPFunction, u);
     if (check_retval(&retval, "KINInit", 1)) return 1;
@@ -303,6 +315,10 @@ int main(int argc, char* argv[])
     // Set Anderson Acceleration damping parameter
     retval = KINSetDampingAA(kin_mem, udata->damping);
     if (check_retval(&retval, "KINSetDampingAA", 1)) return 1;
+
+    // Set inner damping parameter for Composite AA
+    retval = KINSetDampingCAA(kin_mem, udata->damping_caa);
+    if (check_retval(&retval, "KINSetDampingCAA", 1)) return 1;
 
     // Attach user data
     retval = KINSetUserData(kin_mem, (void *) udata);
@@ -611,6 +627,10 @@ static int InitUserData(UserData *udata)
   udata->damping     = ONE;             // no damping for Anderson Acceleration
   udata->orthaa      = 0;               // use MGS for Anderson Acceleration
   udata->maxits      = 200;             // max number of fixed point iterations
+  udata->maxits_caa  = 0;               // max number of inner iterations for Comp AA
+  udata->mcaa        = 0;               // no AA for inner iterations of Comp AA
+  udata->orthcaa     = 0;               // use MGS for inner AA of Comp AA
+  udata->damping_caa = ONE;             // no damping for inner iterations of CompAA
 
   // Vectors
   udata->samples_local = NULL;
@@ -716,6 +736,22 @@ static int ReadInputs(int *argc, char ***argv, UserData *udata, bool outproc)
     {
       udata->orthaa = stoi((*argv)[arg_idx++]);
     }
+    else if (arg == "--maxitscaa")
+    {
+      udata->maxits_caa = stoi((*argv)[arg_idx++]);
+    }
+    else if (arg == "--mcaa")
+    {
+      udata->mcaa = stoi((*argv)[arg_idx++]);
+    }
+    else if (arg == "--orthcaa")
+    {
+      udata->orthcaa = stoi((*argv)[arg_idx++]);
+    }
+    else if (arg == "--dampingcaa")
+    {
+      udata->damping_caa = stod((*argv)[arg_idx++]);
+    }
     else if (arg == "--maxits")
     {
       udata->maxits = stoi((*argv)[arg_idx++]);
@@ -790,6 +826,10 @@ static void InputHelp()
   cout << "  --maa                   : size of Anderson Acceleration subspace" << endl;
   cout << "  --damping               : damping for Anderson Acceleration" << endl;
   cout << "  --orthaa                : orthogonalization routined used in Anderson Acceleration" << endl;
+  cout << "  --maxitscaa <maxits_caa>   : max inner iterations for AA in Composite Anderson Acceleration" << endl;
+  cout << "  --mcaa <mcaa>              : number of previous residuals for inner AA in Composite Anderson Acceleration" << endl;
+  cout << "  --dampingcaa <damping_caa> : damping for inner AA in Composite Anderson Acceleration " << endl;
+  cout << "  --orthcaa <orthcaa>        : orthogonalization routine used for inner AA in Composite Anderson Acceleration " << endl;
   cout << "  --maxits <iterations>   : max fixed point iterations" << endl;
   cout << "  --output                : output nonlinear solver statistics" << endl;
   cout << "  --timing                : print timing data" << endl;
@@ -818,6 +858,10 @@ static int PrintUserData(UserData *udata)
   cout << "  maa                = " << udata->maa                         << endl;
   cout << "  damping            = " << udata->damping                     << endl;
   cout << "  orthaa             = " << udata->orthaa                      << endl;
+  cout << "  maxits_caa     = " << udata->maxits_caa               << endl;
+  cout << "  m_caa          = " << udata->mcaa                     << endl;
+  cout << "  orth_caa       = " << udata->orthcaa                  << endl;
+  cout << "  damping_caa    = " << udata->damping_caa              << endl;
   cout << "  maxits             = " << udata->maxits                      << endl;
   cout << " ------------------------------------------------------- " << endl;
   cout << "  output             = " << udata->output                      << endl;
@@ -890,7 +934,12 @@ static int OpenOutput(UserData *udata)
     fname.str("");
     fname.clear();
     fname << "EM_res_m" << udata->maa << "_orth" << udata->orthaa
-          << "_len" << udata->nodes_loc << ".txt";
+          << "_len" << udata->nodes_loc;
+    if (udata->maxits_caa > 0) {
+        if (udata->mcaa > 0) fname << "_mc" << udata->mcaa;
+        else fname << "_alt" << udata->maxits_caa;
+    }
+    fname << ".txt";
     udata->rout.open(fname.str());
 
     udata->rout << scientific;

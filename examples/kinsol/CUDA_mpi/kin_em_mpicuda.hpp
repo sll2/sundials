@@ -80,6 +80,10 @@ struct UserData
   double   damping;     // daming for Anderson Acceleration
   int      orthaa;      // orthogonalization routine for AA
   int      maxits;      // max number of fixed point iterations
+  int      maxits_caa;  // inner iterations for Composite AA
+  int      mcaa;        // m for inner iterations of Composite AA
+  int      orthcaa;     // orthogonlization routine for inner iterations of Composite AA
+  int      damping_caa; // damping for inner iterations of Composite AA
 
   // Vectors to help with FPFunction definition and execution
   N_Vector samples_local; // vector containing distribution samples

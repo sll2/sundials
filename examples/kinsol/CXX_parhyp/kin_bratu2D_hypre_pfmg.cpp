@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     // Set initial condition
     retval = InitialGuess(u, udata);
     if (check_retval(&retval, "InitialGuess", 1)) return 1;
-    //N_VConst(ZERO, u);
+    N_VConst(ZERO, u);
 
     // ---------------------
     // Create hypre objects
@@ -464,8 +464,6 @@ static int FPFunction(N_Vector u, N_Vector f, void *user_data)
   // ---------------------------
   // Calculate f = C e^u
   // ---------------------------
-  //
-  // REPLACE WITH CUDA KERNEL
 
   // Iterate over domain interior
   sunindextype istart = (udata->HaveNbrW) ? 0 : 1;
@@ -485,10 +483,6 @@ static int FPFunction(N_Vector u, N_Vector f, void *user_data)
   // ---------------------------
   // Solve Au = C e^u
   // ---------------------------
-  //
-  // REPLACE WITH HYPRE PCG
-  // CALL FUNCTION THAT SETSUP PCG FOR THIS ITERATION
-  // HYPRE_PCGSolve(solver, udata->Jmatrix, f, f);
 
   // Solve system Au = f, store solution in f
   retval = SUNLinSolSolve(udata->LS, NULL, f, f, udata->epslin);
